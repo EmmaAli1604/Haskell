@@ -1,4 +1,11 @@
-p where
+{-# LANGUAGE InstanceSigs #-}
+
+data LProp = PTrue | PFalse | Var Nombre | Neg LProp |Conj LProp LProp | Disy LProp LProp | Impl LProp LProp |Syss LProp LProp
+type Nombre = String -- Nombre es un sinonimo para String.
+type Asignacion = [(Nombre, Int)]
+
+--show Crea la instancia de la clase show para LProp utilizando los símbolos adecuados.
+instance Show LProp where
     show :: LProp -> String
     show(Var a)=show a
     show PTrue=show True

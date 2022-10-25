@@ -20,9 +20,18 @@ instance Show LProp where
 --vars 
 --Función que recibe una LProp y regresa la lista con todas las variables que aparecen en la expresión.
 vars :: LProp -> [String]
-vars (Impl PTrue PFalse) = []
-vars (Var a)=["a"]
-vars (Syss (Impl (Var "a") (Var "b")) (Impl (Var "c") (Conj (Var "b") (Var "c"))))= ["a","b","c"]
+vars PTrue  = []
+vars PFalse  = []
+vars (Var a) = [a] 
+vars (Neg a) = vars a 
+vars (Conj a b) = aux1 (vars a ++ vars b)
+vars (Impl a b) = aux1 (vars a ++ vars b)
+vars (Syss a b) = aux1 (vars a ++ vars b)
+-- Función que filtra los elementos repetidos de las listas
+aux1 :: (Eq a) => [a] -> [a] 
+aux1 [] = []
+aux1 (x:xs) = x : aux1 (filter (/= x) xs)
+---vars (Syss (Impl (Var "a") (Var "b")) (Impl (Var "c") (Conj (Var "b") (Var "c"))))= ["a","b","c"]
 
 --asocia_der 
 --Función que recibe una LProp y aplica la ley de la asociatividad hacia la derecha sobre los elementos de la expresión.
@@ -88,7 +97,7 @@ equiv_op (Conj (Disy (Var "s") (Var "w")) (Impl (Var "e") (Var "d"))) ...= ((s v
 --Función que quita las dobles negaciones de una LProp.
 dobleNeg :: LProp -> LProp
 dobleNeg (Neg a)= Neg a
-dobleNeg (Neg(Neg a))= a
+--dobleNeg (Neg(Neg a))= a
 dobleNeg PFalse=PFalse
 dobleNeg PTrue=PTrue
 dobleNeg (Conj (a)(b))=Conj(dobleNeg a)(dobleNeg b)

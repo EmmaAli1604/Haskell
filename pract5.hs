@@ -46,14 +46,19 @@ asocia_der (Conj (a) (Conj (b) (c))) = (Conj (a)(Conj (b) (c)))
 asocia_der (Disy (Disy (a) (b)) (c)) = (Disy (a)(Disy (b) (c)))
 asocia_der (Disy (a) (Disy (b) (c))) = (Disy (a)(Disy (b) (c)))
 
-
 --asocia_izq 
 --Lo mismo que asocia_der pero para el otro lado.
---asocia_izq (Conj (Conj (Var "a") (Var "b")) (Var "c")) = ((a ^ b) ^ c)
---asocia_izq (Conj (Var "a") (Conj (Var "b") (Var "c"))) = ((a ^ b) ^ c)
---asocia_izq (Disy (Disy (Var "p") (Var "q")) (Var "r")) = ((p v q) v r)
---asocia_izq (Disy (Var "p") (Disy (Var "q") (Var "r"))) = ((p v q) v r)
---asocia_izq (Syss PTrue PTrue) = (True <-> True)
+asocia_izq :: LProp -> LProp
+asocia_izq PFalse=PFalse
+asocia_izq PTrue=PTrue
+asocia_izq (Syss PTrue PTrue) = (Syss PTrue PTrue)
+asocia_izq (Conj (Conj (a) (b)) (c)) = (Conj (Conj (a) (b)) (c))
+asocia_izq (Conj (a) (Conj (b) (c))) = (Conj (Conj (a) (b)) (c))
+asocia_izq (Disy (Disy (p) (q)) (r)) = (Disy (Disy (p) (q)) (r))
+asocia_izq (Disy (p) (Disy (q) (r))) = (Disy (Disy (p) (q)) (r))
+asocia_izq (Neg a)=Neg (asocia_izq a)
+asocia_izq(Impl a b)= Impl (asocia_izq a)(asocia_izq b)
+asocia_izq (Syss a b) = Syss(asocia_izq a)(asocia_izq b)
 
 --conm 
 --Función que recibe una LPropr y aplica la ley de la conmutatividad de forma exhaustiva sobre los elementos de la expresión 

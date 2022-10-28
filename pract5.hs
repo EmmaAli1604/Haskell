@@ -11,18 +11,27 @@ instance Show LProp where
     show PTrue=show True
     show PFalse=show False
     show (Neg a)= "¬"++ show a
-    show (Conj a b)=  show a ++" ^ "++show b
-    show (Disy a b)=  show a ++" v "++show b
-    show (Impl a b)=  show a ++" -> "++show b
-    show (Syss a b)=  show a ++" <-> "++show b
+    show (Conj a b)=  show a ++ " ∧ " ++ show b
+    show (Disy a b)=  show a ++ " ∨ " ++ show b
+    show (Impl a b)=  show a ++ " ⇒ " ++ show b
+    show (Syss a b)=  show a ++ " ⇔ " ++ show b
 
-
+--tocino
 --vars 
 --Función que recibe una LProp y regresa la lista con todas las variables que aparecen en la expresión.
 vars :: LProp -> [String]
-vars (Impl PTrue PFalse) = []
-vars (Var a)=["a"]
-vars (Syss (Impl (Var "a") (Var "b")) (Impl (Var "c") (Conj (Var "b") (Var "c"))))= ["a","b","c"]
+vars PTrue  = []
+vars PFalse  = []
+vars (Var a) = [a] 
+vars (Neg a) = vars a 
+vars (Conj a b) = aux1 (vars a ++ vars b)
+vars (Impl a b) = aux1 (vars a ++ vars b)
+vars (Syss a b) = aux1 (vars a ++ vars b)
+-- Función que filtra los elementos repetidos de las listas
+aux1 :: (Eq a) => [a] -> [a] 
+aux1 [] = []
+aux1 (x:xs) = x : aux1 (filter (/= x) xs)
+
 
 --asocia_der 
 --Función que recibe una LProp y aplica la ley de la asociatividad hacia la derecha sobre los elementos de la expresión.
@@ -37,14 +46,14 @@ asocia_der (Conj (a) (Conj (b) (c))) = (Conj (a)(Conj (b) (c)))
 asocia_der (Disy (Disy (a) (b)) (c)) = (Disy (a)(Disy (b) (c)))
 asocia_der (Disy (a) (Disy (b) (c))) = (Disy (a)(Disy (b) (c)))
 
-{-
+
 --asocia_izq 
 --Lo mismo que asocia_der pero para el otro lado.
-asocia_izq (Conj (Conj (Var "a") (Var "b")) (Var "c")) = ((a ^ b) ^ c)
-asocia_izq (Conj (Var "a") (Conj (Var "b") (Var "c"))) = ((a ^ b) ^ c)
-asocia_izq (Disy (Disy (Var "p") (Var "q")) (Var "r")) = ((p v q) v r)
-asocia_izq (Disy (Var "p") (Disy (Var "q") (Var "r"))) = ((p v q) v r)
-asocia_izq (Syss PTrue PTrue) = (True <-> True)-}
+--asocia_izq (Conj (Conj (Var "a") (Var "b")) (Var "c")) = ((a ^ b) ^ c)
+--asocia_izq (Conj (Var "a") (Conj (Var "b") (Var "c"))) = ((a ^ b) ^ c)
+--asocia_izq (Disy (Disy (Var "p") (Var "q")) (Var "r")) = ((p v q) v r)
+--asocia_izq (Disy (Var "p") (Disy (Var "q") (Var "r"))) = ((p v q) v r)
+--asocia_izq (Syss PTrue PTrue) = (True <-> True)
 
 --conm 
 --Función que recibe una LPropr y aplica la ley de la conmutatividad de forma exhaustiva sobre los elementos de la expresión 
@@ -58,14 +67,19 @@ conm (Neg a)=Neg(conm a)
 conm (Impl a b)=Impl(conm a)(conm b)
 conm (Syss a b)=Syss(conm a)(conm b)
 
-{--dist 
+--dist 
 --Función que recibe una LProp y aplica la ley de distributividad de forma exhaustiva sobre toda la expresión.
-dist (Conj (Var "d") (Disy (Var "e") (Var "f"))) = ((d ^ e) v (d ^ f))
-dist (Disy (Var "s") (Conj (Var "t") (Var "u"))) = ((s v t) ^ (s v u))
-dist (Conj (Var "a") (Impl (Var "b") (Var "a"))) = ((b -> a) ^ a)
-dist (Var "r") = r
-dist (Disy (Var "i") PFalse) = (False v i)
-dist PTrue = True-}
+dist :: LProp -> LProp
+dist PFalse = PFalse
+dist PTrue = PTrue
+dist (Var a) = (Var a)
+dist (Neg a)= Neg(dist a)
+dist (Conj (a) (Disy (b) (c))) = (Disy (Conj (dist(a)) (dist(b))) (Conj (dist(a)) (dist (c))))
+dist (Disy (a) (Conj (b) (c))) = (Conj (Disy (dist(a)) (dist(b))) (Disy (dist(a)) (dist (c))))
+dist (Conj a b)= Conj(dist a)(dist b)
+dist (Disy a b)= Disy(dist a)(dist b)  
+dist (Impl a b)= Impl(dist a)(dist b)
+dist (Syss a b)= Syss(dist a)(dist b)
 
 --deMorgan 
 --Función que le aplica a una LProp las leyes de De morgan.
@@ -78,17 +92,23 @@ deMorgan (Syss (a)(b))= Syss(deMorgan a)(deMorgan b)
 
 --equiv_op 
 --Función que recibe una LProp y aplica la equivalencia de operadores que se describe al inicio de este documento.
-{-equiv_op (Impl PFalse (Var "q")) = (! False v q)
-equiv_op (Syss PFalse PTrue) = ((! True v False) ^ (! False v True))
-equiv_op (Syss (Var "k") (Neg PFalse)) = ((! k v ! False) ^ (! ! False v k))
-equiv_op (Disy (Var "c") (Conj (Var "u") (Var "b"))) = (c v (u ^ b))
-equiv_op (Conj (Disy (Var "s") (Var "w")) (Impl (Var "e") (Var "d"))) ...= ((s v w)^(! e v d))-}
+equiv_op :: LProp -> LProp
+equiv_op PFalse = PFalse
+equiv_op PTrue = PTrue
+equiv_op (Var a) = (Var a)
+equiv_op (Neg a)= Neg(equiv_op (a))
+equiv_op (Impl a b) = (Disy (Neg ( (a))) ( (b)) )
+--equiv_op (Syss a b) = 
+--equiv_op (Conj a b) = Conj ((a) ((b)))
+--equiv_op (Disy a b) = Disy (( (a)) ( (b)))
+
+ 
 
 --dobleNeg 
 --Función que quita las dobles negaciones de una LProp.
 dobleNeg :: LProp -> LProp
 dobleNeg (Neg a)= Neg a
-dobleNeg (Neg(Neg a))= a
+--dobleNeg (Neg(Neg a))= a
 dobleNeg PFalse=PFalse
 dobleNeg PTrue=PTrue
 dobleNeg (Conj (a)(b))=Conj(dobleNeg a)(dobleNeg b)

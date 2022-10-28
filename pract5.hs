@@ -16,7 +16,7 @@ instance Show LProp where
     show (Impl a b)=  show a ++ " ⇒ " ++ show b
     show (Syss a b)=  show a ++ " ⇔ " ++ show b
 
-
+--tocino
 --vars 
 --Función que recibe una LProp y regresa la lista con todas las variables que aparecen en la expresión.
 vars :: LProp -> [String]

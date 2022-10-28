@@ -89,11 +89,16 @@ dist (Syss a b)= Syss(dist a)(dist b)
 --deMorgan 
 --Función que le aplica a una LProp las leyes de De morgan.
 deMorgan :: LProp -> LProp
-deMorgan (Neg (Neg (o))) = (Neg (Neg (o)))
 deMorgan (Neg (Conj (a) (b))) = (Disy (Neg(a)) (Neg(b)))
 deMorgan (Neg (Disy (a) (b))) = (Conj (Neg(a)) (Neg(b)))
-deMorgan (Impl (a)(b))= Impl(deMorgan a)(deMorgan b)
-deMorgan (Syss (a)(b))= Syss(deMorgan a)(deMorgan b)
+deMorgan (Impl (a)(b))= Impl (a)(b)
+deMorgan (Syss (a)(b))= Syss (a)(b)
+deMorgan (Neg (Neg (o))) = (Neg (Neg (o)))
+deMorgan (Neg (a)) = (Neg (deMorgan a))
+deMorgan (Conj (a)(b))= Conj (deMorgan a)(deMorgan b)
+deMorgan (Disy (a)(b))= Disy (deMorgan a)(deMorgan b)
+deMorgan (Impl (a)(b))= Impl (deMorgan a)(deMorgan b)
+deMorgan (Syss (a)(b))= Syss (deMorgan a)(deMorgan b)
 
 --equiv_op 
 --Función que recibe una LProp y aplica la equivalencia de operadores que se describe al inicio de este documento.

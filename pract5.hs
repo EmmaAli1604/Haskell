@@ -11,10 +11,10 @@ instance Show LProp where
     show PTrue=show True
     show PFalse=show False
     show (Neg a)= "¬"++ show a
-    show (Conj a b)=  show a ++ " ∧ " ++ show b
-    show (Disy a b)=  show a ++ " ∨ " ++ show b
-    show (Impl a b)=  show a ++ " ⇒ " ++ show b
-    show (Syss a b)=  show a ++ " ⇔ " ++ show b
+    show (Conj a b)= "("++ show a ++" ^ "++show b++")"
+    show (Disy a b)=  "("++show a ++" v "++show b++")"
+    show (Impl a b)=  "("++show a ++" -> "++show b++")"
+    show (Syss a b)=  "("++show a ++" <-> "++show b++")"
 
 --tocino
 --vars 

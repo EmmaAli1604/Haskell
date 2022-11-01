@@ -117,14 +117,13 @@ equiv_op (Impl a b) = (Disy (Neg ( (a))) ( (b)) )
 dobleNeg :: LProp -> LProp
 dobleNeg PFalse = PFalse
 dobleNeg PTrue = PTrue
-dobleNeg (Var a)=Var a
-dobleNeg (Neg (Var a))= Neg (Var a)
-dobleNeg (Neg(Neg(Var a)))= Var a
-dobleNeg (Neg(Neg(Conj (Var a)(Var b))))= Conj(dobleNeg (Var a))(dobleNeg (Var b))
-{-dobleNeg (Conj (Var a)(Var b))=Conj(dobleNeg (Var a))(dobleNeg (Var b))
-dobleNeg (Disy (Var a)(Var b))=Disy(dobleNeg (Var a))(dobleNeg (Var b))
-dobleNeg (Impl (Var a)(Var b))=Impl(dobleNeg (Var a))(dobleNeg (Var b))
-dobleNeg (Syss (Var a)(Var b))=Syss(dobleNeg (Var a))(dobleNeg (Var b))-}
+dobleNeg (Var a) = Var a
+dobleNeg (Neg (Neg a)) = dobleNeg a
+dobleNeg (Neg a) = Neg (dobleNeg a)
+dobleNeg (Conj a b) = Conj (dobleNeg a) (dobleNeg b)
+dobleNeg (Disy a b) = Disy (dobleNeg a) (dobleNeg b)
+dobleNeg (Syss a b) = Syss (dobleNeg a) (dobleNeg b)
+dobleNeg (Impl a b) = Impl (dobleNeg a) (dobleNeg b)
 
 --num_conectivos 
 --Función que redibe una LProp y contesta con el número de conectivos lógicos en la expresión.

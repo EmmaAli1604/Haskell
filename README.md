@@ -1,2 +1,0 @@
-# Haskell
-Trabajos Haskell

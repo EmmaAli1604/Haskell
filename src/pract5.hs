@@ -10,8 +10,6 @@ Esta mejor explicado en el readme .
 {-# LANGUAGE InstanceSigs #-}
 
 {-# LANGUAGE InstanceSigs #-}
-import Distribution.Simple.Utils (xargs)
-import GHC.Platform (osSubsectionsViaSymbols)
 type Nombre = String
 data LProp = T | F | VarP Nombre | Conj LProp LProp | Disy LProp LProp | Impl LProp LProp | Syss LProp LProp | Neg LProp 
      

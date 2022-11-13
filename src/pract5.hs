@@ -9,11 +9,10 @@ Esta mejor explicado en el readme .
 --esto importa lo nesesario para hacer la instancia del Show 
 {-# LANGUAGE InstanceSigs #-}
 
-{-# LANGUAGE InstanceSigs #-}
+
 type Nombre = String
-data LProp = T | F | VarP Nombre | Conj LProp LProp | Disy LProp LProp | Impl LProp LProp | Syss LProp LProp | Neg LProp 
-     
-data Tableaux = Hoja [LProp] | Alpha [LProp] Tableaux | Beta [LProp] Tableaux Tableaux
+data LProp = T | F | VarP Nombre | Conj LProp LProp | Disy LProp LProp | Impl LProp LProp | Syss LProp LProp | Neg LProp    
+data Tableaux = Hoja [LProp] | Alpha [LProp] Tableaux | Beta [LProp] Tableaux Tableaux deriving Show 
 
 instance Show LProp where
     show :: LProp -> String 
@@ -25,6 +24,7 @@ instance Show LProp where
     show (Disy a b)=  "("++show a ++" ∨ "++show b++")"
     show (Impl a b)=  "("++show a ++" ⇒ "++show b++")"
     show (Syss a b)=  "("++show a ++" ⇔ "++show b++")"
+
 
 
 {-esLiteral :: Lprop -> Bool
@@ -72,12 +72,49 @@ beta (Neg(Conj a b))= True
 beta _ = False
 
 sigma :: LProp -> Bool
-sigma (Neg a)=True
+sigma (Neg(Neg(a))) = True
+sigma (Neg(T)) = True
+sigma (Neg(F)) = True
 sigma _ = False
 
-{-expAlpha :: [LProp] -> LProp -> [LProp]
-expAlpha l f@(Conj a b) = a : b : ln
-                            where ln = quita f n
+expAlpha :: [LProp] -> LProp -> [LProp]
+
+expAlpha ((Conj a b): xs) (Conj x y)  = a : b : xs
+expAlpha ((Neg(Disy a b)): xs) (Conj x y) = Neg (a): Neg (b): xs
+expAlpha (_:xs) (Conj x y) = x : expAlpha xs (Conj x y)
 
 expBeta :: [LProp] -> LProp -> ([LProp], [LProp])
-expBeta _ _ = error "implementar"-}
+
+expBeta ((Disy a b): xs) f@(Disy c d)  = ((c:xs),(d:xs))
+expBeta (x: xs) f@(Disy c d)  = pegar (expBeta xs f) (x)
+
+pegar :: ([LProp], [LProp]) -> LProp -> ([LProp], [LProp])
+pegar (f,l) x = ((f++[x]),(l++[x])) 
+
+
+
+expSigma :: [LProp] -> LProp -> [LProp]
+
+expSigma ((Neg(Neg a)):xs) (Neg(Neg b)) = (a:xs)
+
+expSigma (x:xs) f@(Neg(Neg b)) = x: expSigma xs f
+
+
+consTableaux :: LProp -> Tableaux
+
+consTableaux (VarP a) = Hoja [VarP a]
+consTableaux (Neg(VarP a)) = Hoja [(Neg(VarP a))]
+consTableaux (Neg(Neg (VarP a))) = Hoja [(VarP a)]
+consTableaux (Disy a b) = Beta [(Disy a b)] (consTableaux a)  (consTableaux b) 
+consTableaux (Neg (Conj a b)) = Beta [(Neg (Conj a b))]  (consTableaux (Neg a))  (consTableaux (Neg b))
+consTableaux (Impl a b) = Beta [(Impl a b)] (consTableaux (Neg a)) (consTableaux (b))
+--consTableaux (Conj a b) = alpha [(Conj a b)] (Alpha [a] (consTableaux a))
+--consTableaux (Syss a b) = Beta [
+--consTableaux
+--consTableaux
+--consTableaux
+
+
+
+
+

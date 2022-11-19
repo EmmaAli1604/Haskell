@@ -12,7 +12,8 @@ Esta mejor explicado en el readme .
 
 type Nombre = String
 data LProp = T | F | VarP Nombre | Conj LProp LProp | Disy LProp LProp | Impl LProp LProp | Syss LProp LProp | Neg LProp    
-data Tableaux = Hoja [LProp] | Alpha [LProp] Tableaux | Beta [LProp] Tableaux Tableaux deriving Show 
+
+data Tableaux = Hoja [LProp] | Alpha [LProp] Tableaux Tableaux | Beta [LProp] Tableaux Tableaux --deriving Show 
 
 instance Show LProp where
     show :: LProp -> String 
@@ -25,17 +26,14 @@ instance Show LProp where
     show (Impl a b)=  "("++show a ++" ⇒ "++show b++")"
     show (Syss a b)=  "("++show a ++" ⇔ "++show b++")"
 
+instance Show Tableaux where
+
+    show :: Tableaux -> String
+    show (Hoja [a]) ="\n"++"\t"++ "Hoja " ++"["++show a ++"]"
+    show (Alpha [a] x y ) ="\t" ++ "Alpha " ++"["++ show a ++"]" ++ show x ++ show y
+    show (Beta [a] x y) ="\n"++"\t"++"Beta " ++"["++ show a ++ "]" ++"\t"++ show x ++"\t"++ show y
 
 
-{-esLiteral :: Lprop -> Bool
-esLiteral (VarP a) = True
-esLiteral (Neg a) = esLiteral a
-esLiteral T = True
-esLiteral F = True
-esLiteral _ = False
-
-literales  = and . map esLiteral 
--}
 
 literales :: [LProp] -> Bool
 literales [] = True
@@ -49,7 +47,6 @@ literales (_: xs) = False
 
 
 nextF :: [LProp] ->  LProp
-nextF [] = error "implementar"
 nextF ((Conj a b):xs)= Conj a b
 nextF ((Disy a b):xs)= Disy a b
 nextF ((Impl a b):xs)= Impl a b
@@ -81,11 +78,14 @@ expAlpha :: [LProp] -> LProp -> [LProp]
 
 expAlpha ((Conj a b): xs) (Conj x y)  = a : b : xs
 expAlpha ((Neg(Disy a b)): xs) (Conj x y) = Neg (a): Neg (b): xs
+expAlpha ((Neg(Impl a b)): xs) (Conj x y) =  a : Neg (b): xs
 expAlpha (_:xs) (Conj x y) = x : expAlpha xs (Conj x y)
 
 expBeta :: [LProp] -> LProp -> ([LProp], [LProp])
 
 expBeta ((Disy a b): xs) f@(Disy c d)  = ((c:xs),(d:xs))
+expBeta (Neg(Conj a b): xs) f@(Disy c d) = ((Neg a:xs),(Neg b:xs))
+expBeta ((Impl a b): xs) f@(Disy c d)  = ((Neg a:xs),(Neg b:xs))
 expBeta (x: xs) f@(Disy c d)  = pegar (expBeta xs f) (x)
 
 pegar :: ([LProp], [LProp]) -> LProp -> ([LProp], [LProp])
@@ -108,13 +108,35 @@ consTableaux (Neg(Neg (VarP a))) = Hoja [(VarP a)]
 consTableaux (Disy a b) = Beta [(Disy a b)] (consTableaux a)  (consTableaux b) 
 consTableaux (Neg (Conj a b)) = Beta [(Neg (Conj a b))]  (consTableaux (Neg a))  (consTableaux (Neg b))
 consTableaux (Impl a b) = Beta [(Impl a b)] (consTableaux (Neg a)) (consTableaux (b))
---consTableaux (Conj a b) = alpha [(Conj a b)] (Alpha [a] (consTableaux a))
---consTableaux (Syss a b) = Beta [
---consTableaux
---consTableaux
---consTableaux
+consTableaux (Conj a b) = Alpha [(Conj a b)] (consTableaux a) (consTableaux b)
+consTableaux (Syss a b) = Beta [Syss a b] (consTableaux (Conj a b)) (consTableaux (Conj (Neg a)(Neg b))) 
+consTableaux (Neg(Disy a b)) = Alpha [(Neg(Disy a b))] (consTableaux (Neg a)) (consTableaux (Neg b))  
+consTableaux (Neg (Impl a b)) = Alpha [(Neg(Impl a b))] (consTableaux a)  (consTableaux (Neg b))
+consTableaux (Neg (Syss a b))= Beta [(Neg(Syss a b))] (consTableaux (Neg a)) (consTableaux b)
 
 
 
 
+-- para recuperar el valo original del String, se calcula 27 -((mod n 26)-1))
+ceasear :: String -> Int -> String
+ceasear s n =map aux2 (map (+n)(map (tocino) s)) 
 
+   
+evilceasear :: String -> Int -> String
+evilceasear s n =map aux2 (map (+t)(map (tocino) s)) 
+                            where t = 27-((mod n 26)-1)
+tocino::Char -> Int 
+tocino a = aux a 0 
+
+aux ::Char -> Int -> Int 
+aux a n = if (a == alfabeto!!n)
+    then n 
+    else aux a (n+1)
+    where alfabeto ="abcdefghijklmnopqrstuvwxyz"
+
+aux2 ::Int -> Char
+aux2 n = if (n==26)
+    then alfabeto!!(n-1)
+    else (alfabeto!!((mod n 26 )-1))
+    
+    where alfabeto ="abcdefghijklmnopqrstuvwxyz"

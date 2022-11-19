@@ -9,12 +9,13 @@ Esta mejor explicado en el readme .
 --esto importa lo nesesario para hacer la instancia del Show 
 {-# LANGUAGE InstanceSigs #-}
 
-
+-- alias para los String que seran las variables
 type Nombre = String
+-- se define la data para las LProp
 data LProp = T | F | VarP Nombre | Conj LProp LProp | Disy LProp LProp | Impl LProp LProp | Syss LProp LProp | Neg LProp    
-
+-- se define la data para los Tableaux
 data Tableaux = Hoja [LProp] | Alpha [LProp] Tableaux Tableaux | Beta [LProp] Tableaux Tableaux --deriving Show 
-
+--instacia para darle el formato adecuado a las LProp
 instance Show LProp where
     show :: LProp -> String 
     show(VarP a)=show a
@@ -26,15 +27,15 @@ instance Show LProp where
     show (Impl a b)=  "("++show a ++" ⇒ "++show b++")"
     show (Syss a b)=  "("++show a ++" ⇔ "++show b++")"
 
+--instancia para darle el formato adecuado a los Tableaux
 instance Show Tableaux where
-
     show :: Tableaux -> String
     show (Hoja [a]) ="\n"++"\t"++ "Hoja " ++"["++show a ++"]"
     show (Alpha [a] x y ) ="\t" ++ "Alpha " ++"["++ show a ++"]" ++ show x ++ show y
     show (Beta [a] x y) ="\n"++"\t"++"Beta " ++"["++ show a ++ "]" ++"\t"++ show x ++"\t"++ show y
 
 
-
+--ejercicio 1
 literales :: [LProp] -> Bool
 literales [] = True
 literales ((VarP a):xs) = literales xs
@@ -45,7 +46,7 @@ literales (Neg (F) : xs) = literales xs
 literales (Neg (VarP a) : xs) = literales xs
 literales (_: xs) = False
 
-
+--ejercicio 2
 nextF :: [LProp] ->  LProp
 nextF ((Conj a b):xs)= Conj a b
 nextF ((Disy a b):xs)= Disy a b
@@ -54,12 +55,14 @@ nextF ((Syss a b):xs)= Syss a b
 nextF ((Neg(VarP a)):xs)= nextF xs
 nextF ((VarP a ):xs)=nextF xs
 
+--ejercicio 3
 alpha :: LProp -> Bool
 alpha (Conj a b)=True
 alpha (Neg(Impl a b))= True
 alpha (Neg(Disy a b))= True
 alpha _ = False
 
+--ejercicio 4
 beta :: LProp -> Bool
 beta (Disy a b)=True
 beta (Syss a b)=True
@@ -68,21 +71,22 @@ beta (Neg(Neg (Syss a b)))= True
 beta (Neg(Conj a b))= True
 beta _ = False
 
+--ejercicio 5
 sigma :: LProp -> Bool
 sigma (Neg(Neg(a))) = True
 sigma (Neg(T)) = True
 sigma (Neg(F)) = True
 sigma _ = False
 
+--ejercicio 6
 expAlpha :: [LProp] -> LProp -> [LProp]
-
 expAlpha ((Conj a b): xs) (Conj x y)  = a : b : xs
 expAlpha ((Neg(Disy a b)): xs) (Conj x y) = Neg (a): Neg (b): xs
 expAlpha ((Neg(Impl a b)): xs) (Conj x y) =  a : Neg (b): xs
 expAlpha (_:xs) (Conj x y) = x : expAlpha xs (Conj x y)
 
+--ejercicio 7
 expBeta :: [LProp] -> LProp -> ([LProp], [LProp])
-
 expBeta ((Disy a b): xs) f@(Disy c d)  = ((c:xs),(d:xs))
 expBeta (Neg(Conj a b): xs) f@(Disy c d) = ((Neg a:xs),(Neg b:xs))
 expBeta ((Impl a b): xs) f@(Disy c d)  = ((Neg a:xs),(Neg b:xs))
@@ -92,16 +96,14 @@ pegar :: ([LProp], [LProp]) -> LProp -> ([LProp], [LProp])
 pegar (f,l) x = ((f++[x]),(l++[x])) 
 
 
-
+--ejercicio 8
 expSigma :: [LProp] -> LProp -> [LProp]
-
 expSigma ((Neg(Neg a)):xs) (Neg(Neg b)) = (a:xs)
-
 expSigma (x:xs) f@(Neg(Neg b)) = x: expSigma xs f
 
 
+--ejercicio 9
 consTableaux :: LProp -> Tableaux
-
 consTableaux (VarP a) = Hoja [VarP a]
 consTableaux (Neg(VarP a)) = Hoja [(Neg(VarP a))]
 consTableaux (Neg(Neg (VarP a))) = Hoja [(VarP a)]
@@ -117,7 +119,7 @@ consTableaux (Neg (Syss a b))= Beta [(Neg(Syss a b))] (consTableaux (Neg a)) (co
 
 
 
--- para recuperar el valo original del String, se calcula 27 -((mod n 26)-1))
+--ejercicio extra
 ceasear :: String -> Int -> String
 ceasear s n =map aux2 (map (+n)(map (tocino) s)) 
 

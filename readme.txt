@@ -91,11 +91,47 @@ La función auxiliar
 pegar :: ([LProp], [LProp]) -> LProp -> ([LProp], [LProp])
 pegar (f,l) x = ((f++[x]),(l++[x])) 
 
-La función expSigma
+La función expSigma 
 expSigma :: [LProp] -> LProp -> [LProp]
 expSigma ((Neg(Neg a)):xs) (Neg(Neg b)) = (a:xs)
 expSigma (x:xs) f@(Neg(Neg b)) = x: expSigma xs f
 
+En la función tableaux se tiene los casos cuando ingresamos un dato LProp que clasificación va a ser si una hoja, una función beta o una función alpha, revisando que dentro de estas no tengamos otros datos de tipo LProp, hasta llegar a lo que sería nuestro caso base, una hoja.
+consTableaux :: LProp -> Tableaux
+
+consTableaux (VarP a) = Hoja [VarP a]
+consTableaux (Neg(VarP a)) = Hoja [(Neg(VarP a))]
+consTableaux (Neg(Neg (VarP a))) = Hoja [(VarP a)]
+consTableaux (Disy a b) = Beta [(Disy a b)] (consTableaux a)  (consTableaux b) 
+consTableaux (Neg (Conj a b)) = Beta [(Neg (Conj a b))]  (consTableaux (Neg a))  (consTableaux (Neg b))
+consTableaux (Impl a b) = Beta [(Impl a b)] (consTableaux (Neg a)) (consTableaux (b))
+consTableaux (Conj a b) = Alpha [(Conj a b)] (consTableaux a) (consTableaux b)
+consTableaux (Syss a b) = Beta [Syss a b] (consTableaux (Conj a b)) (consTableaux (Conj (Neg a)(Neg b))) 
+consTableaux (Neg(Disy a b)) = Alpha [(Neg(Disy a b))] (consTableaux (Neg a)) (consTableaux (Neg b))  
+consTableaux (Neg (Impl a b)) = Alpha [(Neg(Impl a b))] (consTableaux a)  (consTableaux (Neg b))
+consTableaux (Neg (Syss a b))= Beta [(Neg(Syss a b))] (consTableaux (Neg a)) (consTableaux b)
 
 
+-- para recuperar el valor original del String, se calcula 27 -((mod n 26)-1))
+ceasear :: String -> Int -> String
+ceasear s n =map aux2 (map (+n)(map (tocino) s)) 
 
+   
+evilceasear :: String -> Int -> String
+evilceasear s n =map aux2 (map (+t)(map (tocino) s)) 
+                            where t = 27-((mod n 26)-1)
+tocino::Char -> Int 
+tocino a = aux a 0 
+
+aux ::Char -> Int -> Int 
+aux a n = if (a == alfabeto!!n)
+    then n 
+    else aux a (n+1)
+    where alfabeto ="abcdefghijklmnopqrstuvwxyz"
+
+aux2 ::Int -> Char
+aux2 n = if (n==26)
+    then alfabeto!!(n-1)
+    else (alfabeto!!((mod n 26 )-1))
+    
+    where alfabeto ="abcdefghijklmnopqrstuvwxyz"
